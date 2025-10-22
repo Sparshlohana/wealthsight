@@ -1,98 +1,72 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { TransactionItem } from '@/components/transaction-item';
+import { useTransactions } from '@/contexts/TransactionsContext';
+import { canReadSms, parseTransactionFromMessage } from '@/utils/sms';
+import React, { useMemo, useState } from 'react';
+import { Alert, Button, FlatList, Platform, StyleSheet, TextInput, View } from 'react-native';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const { transactions, importMany } = useTransactions();
+  const [manualSms, setManualSms] = useState('');
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const recent = useMemo(() => transactions.sort((a, b) => +new Date(b.date) - +new Date(a.date)), [transactions]);
+
+  async function onImportSms() {
+    const res = await canReadSms();
+    Alert.alert(
+      res.supported ? 'SMS Import' : 'SMS Import Unavailable',
+      res.supported
+        ? 'Attempting to read recent bank/UPI messages...'
+        : `${res.reason}\n\nTip: You can paste an SMS below to parse it.`
+    );
+  }
+
+  function onParseManual() {
+    const tx = parseTransactionFromMessage(manualSms);
+    if (tx) {
+      importMany([tx]);
+      setManualSms('');
+      Alert.alert('Parsed', 'One transaction was added from the SMS text.');
+    } else {
+      Alert.alert('No transaction found', 'Please paste a valid bank/UPI message.');
+    }
+  }
+
+  return (
+    <ThemedView style={{ flex: 1 }}>
+      <View style={styles.header}>
+        <ThemedText type="title">WealthSight</ThemedText>
+        <ThemedText>Recent transactions</ThemedText>
+      </View>
+      <FlatList
+        data={recent}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <TransactionItem tx={item} />}
+        ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: '#eee' }} />}
+        ListHeaderComponent={
+          <View style={{ padding: 16, gap: 8 }}>
+            <Button title="Import from SMS (Android)" onPress={onImportSms} />
+            <View style={{ gap: 8 }}>
+              <ThemedText>Paste an SMS to parse</ThemedText>
+              <TextInput
+                placeholder="e.g., INR 250 debited at Swiggy..."
+                value={manualSms}
+                onChangeText={setManualSms}
+                multiline
+                numberOfLines={3}
+                style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, padding: Platform.select({ ios: 12, default: 10 }) }}
+              />
+              <Button title="Parse SMS" onPress={onParseManual} />
+            </View>
+          </View>
+        }
+        contentContainerStyle={{ paddingBottom: 32 }}
+      />
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  header: { padding: 16, gap: 4 },
 });

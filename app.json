@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "expense-tracker",
-    "slug": "expense-tracker",
+    "name": "WealthSight",
+    "slug": "wealthsight",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "expensetracker",
+    "scheme": "wealthsight",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
