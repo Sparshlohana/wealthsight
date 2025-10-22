@@ -42,8 +42,12 @@ export default function HomeScreen() {
       <FlatList
         data={recent}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <TransactionItem tx={item} />}
-        ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: '#eee' }} />}
+        renderItem={({ item }) => (
+          <View style={{ paddingHorizontal: 16 }}>
+            <TransactionItem tx={item} />
+          </View>
+        )}
+        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         ListHeaderComponent={
           <View style={{ padding: 16, gap: 8 }}>
             <Button title="Import from SMS (Android)" onPress={onImportSms} />
@@ -61,7 +65,7 @@ export default function HomeScreen() {
             </View>
           </View>
         }
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 32, paddingTop: 4, gap: 10 }}
       />
     </ThemedView>
   );

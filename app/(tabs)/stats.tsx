@@ -1,6 +1,8 @@
 import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useTransactions } from '@/contexts/TransactionsContext';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BarChart, PieChart } from 'react-native-gifted-charts';
@@ -11,6 +13,7 @@ export default function StatsScreen() {
     const { transactions } = useTransactions();
     const { categories } = useCategories();
     const [range, setRange] = useState<'month' | 'year' | 'week' | 'all'>('month');
+    const textColor = useThemeColor({}, 'text');
 
     const { pieData, barData, totalIncome, totalExpense, changePct } = useMemo(() => {
         const now = new Date();
@@ -61,32 +64,50 @@ export default function StatsScreen() {
         return { pieData, barData, totalIncome, totalExpense, changePct };
     }, [transactions, categories, range]);
 
+    // Provide a safe fallback for charts when there's no data to avoid runtime errors
+    const safePieData = pieData.length > 0 ? pieData : [{ value: 1, text: 'No data', color: '#9BA1A6' }];
+    const hasBars = (barData?.length ?? 0) > 0;
+
     return (
-        <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
-            <ThemedText type="title">Insights</ThemedText>
-            <View style={styles.segment}>
-                {(['week', 'month', 'year', 'all'] as const).map((r) => (
-                    <TouchableOpacity
-                        key={r}
-                        onPress={() => setRange(r)}
-                        style={[styles.segBtn, range === r && styles.segBtnActive]}
-                    >
-                        <Text style={[styles.segText, range === r && styles.segTextActive]}>
-                            {r.toUpperCase()}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
-            <ThemedText>
-                Income: ₹{totalIncome.toFixed(0)} • Expense: ₹{totalExpense.toFixed(0)} • MoM: {changePct.toFixed(1)}%
-            </ThemedText>
+        <ThemedView style={{ flex: 1 }}>
+            <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
+                <ThemedText type="title">Insights</ThemedText>
+                <View style={styles.segment}>
+                    {(['week', 'month', 'year', 'all'] as const).map((r) => (
+                        <TouchableOpacity
+                            key={r}
+                            onPress={() => setRange(r)}
+                            style={[styles.segBtn, range === r && styles.segBtnActive]}
+                        >
+                            <Text style={[styles.segText, range === r && styles.segTextActive]}>
+                                {r.toUpperCase()}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+                <ThemedText>
+                    Income: ₹{totalIncome.toFixed(0)} • Expense: ₹{totalExpense.toFixed(0)} • MoM: {changePct.toFixed(1)}%
+                </ThemedText>
 
-            <ThemedText type="subtitle">Category-wise expenses</ThemedText>
-            <PieChart data={pieData} donut showText textColor="black" radius={110} innerRadius={70} focusOnPress />
+                <ThemedText type="subtitle">Category-wise expenses</ThemedText>
+                <PieChart
+                    data={safePieData}
+                    donut
+                    showText
+                    textColor={textColor}
+                    radius={110}
+                    innerRadius={70}
+                    focusOnPress
+                />
 
-            <ThemedText type="subtitle">Income vs Expense (last 6 months)</ThemedText>
-            <BarChart stackData={barData as any} barWidth={22} noOfSections={4} isAnimated />
-        </ScrollView>
+                <ThemedText type="subtitle">Income vs Expense (last 6 months)</ThemedText>
+                {hasBars ? (
+                    <BarChart stackData={barData as any} barWidth={22} noOfSections={4} isAnimated />
+                ) : (
+                    <ThemedText>No monthly data available yet.</ThemedText>
+                )}
+            </ScrollView>
+        </ThemedView>
     );
 }
 
