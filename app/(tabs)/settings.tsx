@@ -59,8 +59,8 @@ function SettingItem({ icon, iconColor, title, subtitle, onPress, rightElement, 
 
 export default function SettingsScreen() {
     const { theme, toggle } = useAppTheme();
-    const { transactions } = useTransactions();
-    const { categories } = useCategories();
+    const { transactions, clearAll: clearTransactions } = useTransactions();
+    const { categories, resetDefaults: resetCategories } = useCategories();
     const colors = Colors[theme];
     const [exportingJSON, setExportingJSON] = useState(false);
     const [exportingCSV, setExportingCSV] = useState(false);
@@ -95,17 +95,39 @@ export default function SettingsScreen() {
     }
 
     const handleClearData = () => {
+        if (transactions.length === 0 && categories.length === 0) {
+            Alert.alert('No Data', 'There is no data to clear.', [{ text: 'OK' }]);
+            return;
+        }
+
         Alert.alert(
-            'Clear All Data',
-            'Are you sure you want to delete all transactions and categories? This action cannot be undone.',
+            '⚠️ Clear All Data',
+            `This will permanently delete:\n\n• ${transactions.length} transaction${transactions.length !== 1 ? 's' : ''}\n• All custom categories\n\nCategories will be reset to defaults.\n\nThis action cannot be undone!`,
             [
-                { text: 'Cancel', style: 'cancel' },
                 {
-                    text: 'Delete',
+                    text: 'Cancel',
+                    style: 'cancel'
+                },
+                {
+                    text: 'Delete All',
                     style: 'destructive',
                     onPress: () => {
-                        // Implement clear functionality if needed
-                        Alert.alert('Feature Coming Soon', 'This feature will be available in the next update.');
+                        try {
+                            clearTransactions();
+                            resetCategories();
+                            Alert.alert(
+                                '✓ Data Cleared',
+                                'All transactions have been deleted and categories have been reset to defaults.',
+                                [{ text: 'OK' }]
+                            );
+                        } catch (error) {
+                            Alert.alert(
+                                'Error',
+                                'Failed to clear data. Please try again.',
+                                [{ text: 'OK' }]
+                            );
+                            console.error('Clear data error:', error);
+                        }
                     },
                 },
             ]
@@ -180,8 +202,9 @@ export default function SettingsScreen() {
                                 icon="trash-outline"
                                 iconColor="#EF4444"
                                 title="Clear All Data"
-                                subtitle="Delete all transactions"
+                                subtitle="Delete all transactions and reset categories"
                                 onPress={handleClearData}
+                                disabled={transactions.length === 0 && categories.length === 0}
                             />
                         </Card>
                     </View>
