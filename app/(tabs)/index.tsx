@@ -33,6 +33,11 @@ export default function HomeScreen() {
     );
   }
 
+  // Dev aid: log parser output as you type
+  try {
+    const preview = manualSms ? parseTransactionFromMessage(manualSms) : null;
+    if (preview) console.log('Parser preview:', preview);
+  } catch { }
   function onParseManual() {
     const tx = parseTransactionFromMessage(manualSms);
     if (tx) {
