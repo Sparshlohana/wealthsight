@@ -7,6 +7,7 @@ import { Colors, Tokens } from '@/constants/theme';
 import { useTransactions } from '@/contexts/TransactionsContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { canReadSms, parseTransactionFromMessage, readTransactionsFromDevice } from '@/utils/sms';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import React, { useMemo, useState } from 'react';
 import { Alert, FlatList, Platform, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +17,7 @@ export default function HomeScreen() {
   const scheme = useColorScheme() ?? 'light';
   const [manualSms, setManualSms] = useState('');
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
 
   const recent = useMemo(() => transactions.sort((a, b) => +new Date(b.date) - +new Date(a.date)), [transactions]);
   const { incomeTotal, expenseTotal, balance } = useMemo(() => {
@@ -131,7 +133,12 @@ export default function HomeScreen() {
             </View>
           )}
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-          contentContainerStyle={{ paddingBottom: Math.max(16, insets.bottom + 16), paddingTop: 4, gap: 10 }}
+          // Ensure last items aren't hidden behind the floating tab bar
+          contentContainerStyle={{
+            paddingBottom: Math.max(14, insets.bottom + tabBarHeight + 14),
+            paddingTop: 4,
+          }}
+          scrollIndicatorInsets={{ bottom: tabBarHeight + 14 }}
         />
       </SafeAreaView>
     </ThemedView>

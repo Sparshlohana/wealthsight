@@ -6,10 +6,11 @@ import { useCategories } from '@/contexts/CategoriesContext';
 import { useTransactions } from '@/contexts/TransactionsContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BarChart, PieChart } from 'react-native-gifted-charts';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function monthKey(d: Date) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
 
@@ -19,6 +20,8 @@ export default function StatsScreen() {
     const [range, setRange] = useState<'month' | 'year' | 'week' | 'all'>('month');
     const textColor = useThemeColor({}, 'text');
     const scheme = useColorScheme() ?? 'light';
+    const insets = useSafeAreaInsets();
+    const tabBarHeight = useBottomTabBarHeight();
 
     const { pieData, barData, totalIncome, totalExpense, changePct } = useMemo(() => {
         const now = new Date();
@@ -76,7 +79,10 @@ export default function StatsScreen() {
     return (
         <ThemedView style={{ flex: 1 }}>
             <SafeAreaView style={{ flex: 1 }}>
-                <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
+                <ScrollView
+                    contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: Math.max(24, insets.bottom + tabBarHeight + 24) }}
+                    scrollIndicatorInsets={{ bottom: tabBarHeight + 24 }}
+                >
                     <ThemedText type="title">Insights</ThemedText>
                     <View style={styles.segment}>
                         {(['week', 'month', 'year', 'all'] as const).map((r) => (

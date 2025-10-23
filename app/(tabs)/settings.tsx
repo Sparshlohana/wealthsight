@@ -6,9 +6,10 @@ import { useCategories } from '@/contexts/CategoriesContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { useTransactions } from '@/contexts/TransactionsContext';
 import { exportCSV, exportJSON } from '@/utils/export';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { ScrollView, Switch, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
     const { theme, toggle } = useAppTheme();
@@ -18,10 +19,16 @@ export default function SettingsScreen() {
     async function onExportJSON() { await exportJSON(transactions, categories); }
     async function onExportCSV() { await exportCSV(transactions); }
 
+    const insets = useSafeAreaInsets();
+    const tabBarHeight = useBottomTabBarHeight();
+
     return (
         <ThemedView style={{ flex: 1 }}>
             <SafeAreaView style={{ flex: 1 }}>
-                <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
+                <ScrollView
+                    contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: Math.max(24, insets.bottom + tabBarHeight + 24) }}
+                    scrollIndicatorInsets={{ bottom: tabBarHeight + 24 }}
+                >
                     <ThemedText type="title">Settings</ThemedText>
 
                     <Card>
