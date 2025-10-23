@@ -59,21 +59,26 @@ export default function TransactionForm() {
             <ThemedText type="title">Add Transaction</ThemedText>
             <Card style={{ gap: 16 }}>
                 <View style={styles.row}>
-                    <Text style={styles.label}>Amount</Text>
+                    <Text style={[styles.label, { color: Colors[scheme].text }]}>Amount</Text>
                     <TextInput
                         value={amount}
                         onChangeText={setAmount}
                         placeholder="0.00"
+                        placeholderTextColor={Colors[scheme].muted}
                         keyboardType="decimal-pad"
                         style={[
                             styles.input,
-                            { borderColor: Colors[scheme].border, backgroundColor: scheme === 'dark' ? '#0F1418' : '#FBFCFD' },
+                            {
+                                borderColor: Colors[scheme].border,
+                                backgroundColor: scheme === 'dark' ? '#0F1418' : '#FBFCFD',
+                                color: Colors[scheme].text
+                            },
                         ]}
                     />
                 </View>
 
                 <View style={styles.row}>
-                    <Text style={styles.label}>Type</Text>
+                    <Text style={[styles.label, { color: Colors[scheme].text }]}>Type</Text>
                     <View style={styles.segment}>
                         {(['expense', 'income'] as TransactionType[]).map((t) => (
                             <TouchableOpacity
@@ -85,7 +90,11 @@ export default function TransactionForm() {
                                     type === t && { backgroundColor: Colors[scheme].tint, borderColor: Colors[scheme].tint },
                                 ]}
                             >
-                                <Text style={[styles.segmentText, type === t && { color: 'white' }]}>
+                                <Text style={[
+                                    styles.segmentText,
+                                    { color: Colors[scheme].text },
+                                    type === t && { color: 'white' }
+                                ]}>
                                     {t.toUpperCase()}
                                 </Text>
                             </TouchableOpacity>
@@ -94,7 +103,7 @@ export default function TransactionForm() {
                 </View>
 
                 <View style={styles.row}>
-                    <Text style={styles.label}>Category</Text>
+                    <Text style={[styles.label, { color: Colors[scheme].text }]}>Category</Text>
                     <View style={styles.pills}>
                         {categoryOptions.map((c) => {
                             const active = category === c.id;
@@ -104,11 +113,18 @@ export default function TransactionForm() {
                                     onPress={() => setCategory(c.id)}
                                     style={[
                                         styles.pill,
-                                        { borderColor: Colors[scheme].border },
+                                        {
+                                            borderColor: Colors[scheme].border,
+                                            backgroundColor: scheme === 'dark' ? '#1F2123' : '#eee'
+                                        },
                                         active && { backgroundColor: c.color ?? '#ccc', borderColor: c.color ?? '#ccc' },
                                     ]}
                                 >
-                                    <Text style={[styles.pillText, active && { color: '#0B1220' }]}>{c.name}</Text>
+                                    <Text style={[
+                                        styles.pillText,
+                                        { color: Colors[scheme].text },
+                                        active && { color: '#0B1220' }
+                                    ]}>{c.name}</Text>
                                 </TouchableOpacity>
                             );
                         })}
@@ -116,32 +132,42 @@ export default function TransactionForm() {
                 </View>
 
                 <View style={styles.row}>
-                    <Text style={styles.label}>Date</Text>
+                    <Text style={[styles.label, { color: Colors[scheme].text }]}>Date</Text>
                     <TextInput
                         value={date}
                         onChangeText={setDate}
+                        placeholderTextColor={Colors[scheme].muted}
                         style={[
                             styles.input,
-                            { borderColor: Colors[scheme].border, backgroundColor: scheme === 'dark' ? '#0F1418' : '#FBFCFD' },
+                            {
+                                borderColor: Colors[scheme].border,
+                                backgroundColor: scheme === 'dark' ? '#0F1418' : '#FBFCFD',
+                                color: Colors[scheme].text
+                            },
                         ]}
                     />
-                    <Text style={styles.help}>ISO format, defaults to now</Text>
+                    <Text style={[styles.help, { color: Colors[scheme].muted }]}>ISO format, defaults to now</Text>
                 </View>
 
                 <View style={styles.row}>
-                    <Text style={styles.label}>Description</Text>
+                    <Text style={[styles.label, { color: Colors[scheme].text }]}>Description</Text>
                     <TextInput
                         value={description}
                         onChangeText={setDescription}
+                        placeholderTextColor={Colors[scheme].muted}
                         style={[
                             styles.input,
-                            { borderColor: Colors[scheme].border, backgroundColor: scheme === 'dark' ? '#0F1418' : '#FBFCFD' },
+                            {
+                                borderColor: Colors[scheme].border,
+                                backgroundColor: scheme === 'dark' ? '#0F1418' : '#FBFCFD',
+                                color: Colors[scheme].text
+                            },
                         ]}
                     />
                 </View>
 
                 <View style={styles.row}>
-                    <Text style={styles.label}>Receipt</Text>
+                    <Text style={[styles.label, { color: Colors[scheme].text }]}>Receipt</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                         <AppButton title="Pick image" onPress={pickImage} variant="soft" />
                         {photoUri ? (
@@ -174,7 +200,7 @@ const styles = StyleSheet.create({
     },
     segmentText: { fontWeight: '600' },
     pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-    pill: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#eee', borderWidth: 1 },
+    pill: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, borderWidth: 1 },
     pillText: { fontSize: 12, fontWeight: '600' },
-    help: { fontSize: 12, opacity: 0.6 },
+    help: { fontSize: 12 },
 });

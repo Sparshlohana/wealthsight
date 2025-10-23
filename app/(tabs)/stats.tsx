@@ -89,7 +89,11 @@ export default function StatsScreen() {
                                     range === r && { backgroundColor: Colors[scheme].tint, borderColor: Colors[scheme].tint },
                                 ]}
                             >
-                                <Text style={[styles.segText, range === r && { color: 'white' }]}>
+                                <Text style={[
+                                    styles.segText,
+                                    { color: Colors[scheme].text },
+                                    range === r && { color: 'white' }
+                                ]}>
                                     {r.toUpperCase()}
                                 </Text>
                             </TouchableOpacity>

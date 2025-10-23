@@ -30,9 +30,18 @@ export default function CategoriesScreen() {
                         <View style={{ flexDirection: 'row', gap: 8 }}>
                             <TextInput
                                 placeholder="Add new category"
+                                placeholderTextColor={Colors[scheme].muted}
                                 value={newName}
                                 onChangeText={setNewName}
-                                style={{ flex: 1, borderWidth: 1, borderColor: Colors[scheme].border, borderRadius: 10, padding: 10 }}
+                                style={{
+                                    flex: 1,
+                                    borderWidth: 1,
+                                    borderColor: Colors[scheme].border,
+                                    borderRadius: 10,
+                                    padding: 10,
+                                    backgroundColor: scheme === 'dark' ? '#0F1418' : '#FBFCFD',
+                                    color: Colors[scheme].text
+                                }}
                             />
                             <AppButton title="Add" onPress={onAdd} />
                         </View>
@@ -41,13 +50,19 @@ export default function CategoriesScreen() {
                     {categories.map((c) => (
                         <Card key={c.id} style={styles.card}>
                             <View style={[styles.dot, { backgroundColor: c.color ?? '#90A4AE' }]} />
-                            <Text style={{ flex: 1, fontWeight: '600' }}>{c.name}</Text>
+                            <Text style={{ flex: 1, fontWeight: '600', color: Colors[scheme].text }}>{c.name}</Text>
                             <View style={{ flexDirection: 'row', gap: 8 }}>
-                                <TouchableOpacity onPress={() => rename(c.id, c.name + ' ✓')} style={styles.actionBtn}>
-                                    <Text>Edit</Text>
+                                <TouchableOpacity
+                                    onPress={() => rename(c.id, c.name + ' ✓')}
+                                    style={[styles.actionBtn, { backgroundColor: scheme === 'dark' ? '#1F2123' : '#eee' }]}
+                                >
+                                    <Text style={{ color: Colors[scheme].text }}>Edit</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => remove(c.id)} style={styles.actionBtnDanger}>
-                                    <Text style={{ color: '#c62828', fontWeight: '700' }}>Delete</Text>
+                                <TouchableOpacity
+                                    onPress={() => remove(c.id)}
+                                    style={[styles.actionBtnDanger, { backgroundColor: scheme === 'dark' ? '#3D1F1F' : '#FFEEEE' }]}
+                                >
+                                    <Text style={{ color: Colors[scheme].danger, fontWeight: '700' }}>Delete</Text>
                                 </TouchableOpacity>
                             </View>
                         </Card>
@@ -67,6 +82,6 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     dot: { width: 12, height: 12, borderRadius: 6 },
-    actionBtn: { paddingVertical: 6, paddingHorizontal: 10, backgroundColor: '#eee', borderRadius: 999 },
-    actionBtnDanger: { paddingVertical: 6, paddingHorizontal: 10, backgroundColor: '#FFEEEE', borderRadius: 999 },
+    actionBtn: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999 },
+    actionBtnDanger: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999 },
 });

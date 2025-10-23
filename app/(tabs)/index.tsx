@@ -87,6 +87,7 @@ export default function HomeScreen() {
                   <ThemedText>Paste an SMS to parse</ThemedText>
                   <TextInput
                     placeholder="e.g., INR 250 debited at Swiggy..."
+                    placeholderTextColor={Colors[scheme].muted}
                     value={manualSms}
                     onChangeText={setManualSms}
                     multiline
@@ -97,6 +98,7 @@ export default function HomeScreen() {
                       borderRadius: Tokens.radius.sm,
                       padding: Platform.select({ ios: 12, default: 10 }),
                       backgroundColor: scheme === 'dark' ? '#0F1418' : '#FBFCFD',
+                      color: Colors[scheme].text,
                     }}
                   />
                   <AppButton title="Parse SMS" onPress={onParseManual} variant="soft" />
