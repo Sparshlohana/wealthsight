@@ -4,7 +4,7 @@ import TransactionForm from '@/components/transaction-form';
 import { TransactionItem } from '@/components/transaction-item';
 import { AppButton } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Colors, Tokens } from '@/constants/theme';
+import { Colors } from '@/constants/theme';
 import { useTransactions } from '@/contexts/TransactionsContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -61,6 +61,7 @@ export default function HomeScreen() {
     const preview = manualSms ? parseTransactionFromMessage(manualSms) : null;
     if (preview) console.log('Parser preview:', preview);
   } catch { }
+
   function onParseManual() {
     const tx = parseTransactionFromMessage(manualSms);
     if (tx) {
@@ -75,36 +76,81 @@ export default function HomeScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
+        {/* Header */}
         <View style={styles.header}>
-          <ThemedText type="title">WealthSight</ThemedText>
+          <ThemedText type="title" style={{ fontSize: 28, letterSpacing: -0.5 }}>WealthSight</ThemedText>
+          <ThemedText style={{ color: Colors[scheme].muted, fontSize: 14 }}>
+            Track your expenses effortlessly
+          </ThemedText>
         </View>
 
         {/* Fixed summary and import section (non-scrollable) */}
-        <View style={{ padding: 16, gap: 16 }}>
-          {/* Summary */}
-          <Card>
-            <ThemedText type="subtitle">Balance</ThemedText>
-            <ThemedText style={{ fontSize: 34, fontWeight: '800', marginTop: 2 }}>
-              ₹{balance.toFixed(0)}
-            </ThemedText>
-            <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
-              <Badge
-                color={Colors[scheme].success}
-                label={`In ₹${incomeTotal.toFixed(0)}`}
-              />
-              <Badge
-                color={Colors[scheme].danger}
-                label={`Out ₹${expenseTotal.toFixed(0)}`}
-              />
+        <View style={{ paddingHorizontal: 16, gap: 20 }}>
+          {/* Balance Card with Gradient-like Effect */}
+          <Card style={{
+            padding: 20,
+            backgroundColor: scheme === 'dark' ? '#1A1D1F' : Colors[scheme].surface,
+            borderWidth: 1,
+            borderColor: scheme === 'dark' ? '#2A2D2F' : Colors[scheme].border,
+          }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <View style={{ flex: 1 }}>
+                <ThemedText style={{ fontSize: 13, fontWeight: '600', color: Colors[scheme].muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  Total Balance
+                </ThemedText>
+                <ThemedText style={{ fontSize: 42, fontWeight: '800', marginTop: 8, letterSpacing: -1, lineHeight: 52 }}>
+                  ₹{balance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                </ThemedText>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 12, marginTop: 20, paddingTop: 16, borderTopWidth: 1, borderColor: scheme === 'dark' ? '#2A2D2F' : Colors[scheme].border }}>
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: Colors[scheme].success
+                }} />
+                <View style={{ flex: 1 }}>
+                  <ThemedText style={{ fontSize: 11, color: Colors[scheme].muted, fontWeight: '600' }}>INCOME</ThemedText>
+                  <ThemedText style={{ fontSize: 18, fontWeight: '700', color: Colors[scheme].success, marginTop: 2 }}>
+                    ₹{incomeTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  </ThemedText>
+                </View>
+              </View>
+
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: Colors[scheme].danger
+                }} />
+                <View style={{ flex: 1 }}>
+                  <ThemedText style={{ fontSize: 11, color: Colors[scheme].muted, fontWeight: '600' }}>EXPENSES</ThemedText>
+                  <ThemedText style={{ fontSize: 18, fontWeight: '700', color: Colors[scheme].danger, marginTop: 2 }}>
+                    ₹{expenseTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  </ThemedText>
+                </View>
+              </View>
             </View>
           </Card>
 
-          {/* Import section */}
-          <Card style={{ gap: 12 }}>
-            <ThemedText type="subtitle">Quick import</ThemedText>
-            <AppButton title="Import from SMS (Android)" onPress={onImportSms} />
-            <View style={{ gap: 8 }}>
-              <ThemedText>Paste an SMS to parse</ThemedText>
+          {/* Quick Actions Section - Collapsible */}
+          <View style={{ gap: 12 }}>
+            <ThemedText style={{ fontSize: 12, fontWeight: '700', color: Colors[scheme].muted, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+              Quick Actions
+            </ThemedText>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <View style={{ flex: 1 }}>
+                <AppButton title="Import SMS" onPress={onImportSms} />
+              </View>
+            </View>
+
+            {/* Manual SMS Parse */}
+            <View style={{ gap: 8, marginTop: 4 }}>
+              <ThemedText style={{ fontSize: 13, color: Colors[scheme].muted }}>Or paste SMS to parse</ThemedText>
               <TextInput
                 placeholder="e.g., INR 250 debited at Swiggy..."
                 placeholderTextColor={Colors[scheme].muted}
@@ -115,39 +161,53 @@ export default function HomeScreen() {
                 style={{
                   borderWidth: 1,
                   borderColor: Colors[scheme].border,
-                  borderRadius: Tokens.radius.sm,
+                  borderRadius: 10,
                   padding: Platform.select({ ios: 12, default: 10 }),
-                  backgroundColor: scheme === 'dark' ? '#0F1418' : '#FBFCFD',
+                  backgroundColor: scheme === 'dark' ? '#1A1D1F' : '#FFFFFF',
                   color: Colors[scheme].text,
+                  fontSize: 14,
                 }}
               />
               <AppButton title="Parse SMS" onPress={onParseManual} variant="soft" />
             </View>
-          </Card>
+          </View>
 
-          <ThemedText type="subtitle">Recent transactions</ThemedText>
+          {/* Transactions Header */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+            <ThemedText style={{ fontSize: 18, fontWeight: '700' }}>Recent Transactions</ThemedText>
+            <ThemedText style={{ fontSize: 13, color: Colors[scheme].muted }}>
+              {recent.length} {recent.length === 1 ? 'item' : 'items'}
+            </ThemedText>
+          </View>
         </View>
 
         {/* Only the list scrolls and fills remaining space */}
         <FlatList
-          style={{ flex: 1 }}
+          style={{ flex: 1, marginTop: 16 }}
           data={recent}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <View style={{ paddingHorizontal: 16 }}>
+            <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
               <TransactionItem
                 tx={item}
                 onPress={() => setEditTx(item)}
               />
             </View>
           )}
-          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+          ListEmptyComponent={() => (
+            <View style={{ padding: 40, alignItems: 'center' }}>
+              <ThemedText style={{ fontSize: 15, color: Colors[scheme].muted, textAlign: 'center' }}>
+                No transactions yet.{'\n'}Start tracking your expenses!
+              </ThemedText>
+            </View>
+          )}
           // Ensure last items aren't hidden behind the floating tab bar
           contentContainerStyle={{
-            paddingBottom: Math.max(14, insets.bottom + tabBarHeight + 14),
-            paddingTop: 4,
+            paddingBottom: Math.max(24, insets.bottom + tabBarHeight + 16),
+            paddingTop: 8,
           }}
           scrollIndicatorInsets={{ bottom: tabBarHeight + 14 }}
+          showsVerticalScrollIndicator={false}
         />
         <Modal visible={!!editTx} animationType="slide" onRequestClose={() => setEditTx(null)}>
           <ThemedView style={{ flex: 1, backgroundColor: modalBg }}>
@@ -178,21 +238,6 @@ export default function HomeScreen() {
   );
 }
 
-function Badge({ color, label }: { color: string; label: string }) {
-  return (
-    <View
-      style={{
-        paddingVertical: 6,
-        paddingHorizontal: 10,
-        borderRadius: Tokens.radius.pill,
-        backgroundColor: `${color}22`,
-      }}
-    >
-      <ThemedText style={{ color, fontWeight: '700' }}>{label}</ThemedText>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  header: { padding: 16, gap: 8 },
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 16, gap: 4 },
 });

@@ -12,24 +12,25 @@ export const TransactionItem: React.FC<{ tx: Transaction; onPress?: () => void; 
     const { categories } = useCategories();
     const cat = categories.find((c) => c.id === tx.category);
     const amountColor = tx.type === 'income' ? Colors[scheme].success : Colors[scheme].danger;
-    const cardBg = scheme === 'dark' ? 'rgba(255,255,255,0.04)' : '#F7F8FA';
+    const cardBg = scheme === 'dark' ? '#1A1D1F' : '#FFFFFF';
+    const borderColor = scheme === 'dark' ? '#2A2D2F' : Colors[scheme].border;
     const title = tx.description || tx.merchant || (tx.type === 'income' ? 'Income' : 'Expense');
 
     return (
         <TouchableOpacity
             onPress={onPress}
             onLongPress={onLongPress}
-            activeOpacity={0.8}
-            style={[styles.row, { backgroundColor: cardBg }]}
+            activeOpacity={0.7}
+            style={[styles.row, { backgroundColor: cardBg, borderColor, borderWidth: 1 }]}
         >
             <View style={styles.avatarWrap}>
                 <View
                     style={[
                         styles.avatar,
-                        { backgroundColor: cat?.color ?? (scheme === 'dark' ? '#243041' : '#E2E8F0') },
+                        { backgroundColor: cat?.color ?? (scheme === 'dark' ? '#2A3441' : '#E8EBF0') },
                     ]}
                 >
-                    <Text style={styles.avatarText}>
+                    <Text style={[styles.avatarText, { color: cat?.color ? '#FFFFFF' : (scheme === 'dark' ? '#FFFFFF' : '#0B1220') }]}>
                         {(cat?.name || title).slice(0, 1).toUpperCase()}
                     </Text>
                 </View>
@@ -38,13 +39,18 @@ export const TransactionItem: React.FC<{ tx: Transaction; onPress?: () => void; 
                 <Text style={[styles.title, { color: textColor }]} numberOfLines={1}>
                     {title}
                 </Text>
-                <Text style={[styles.sub, { color: textColor, opacity: 0.65 }]}>
-                    {new Date(tx.date).toLocaleDateString()} • {cat?.name ?? tx.category}
+                <Text style={[styles.sub, { color: Colors[scheme].muted }]}>
+                    {new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} • {cat?.name ?? tx.category}
                 </Text>
             </View>
-            <Text style={[styles.amount, { color: amountColor }]}>
-                {tx.type === 'income' ? '+' : '-'}₹{tx.amount.toFixed(2)}
-            </Text>
+            <View style={{ alignItems: 'flex-end' }}>
+                <Text style={[styles.amount, { color: amountColor }]}>
+                    {tx.type === 'income' ? '+' : '-'}₹{tx.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                </Text>
+                <Text style={[styles.amountLabel, { color: Colors[scheme].muted }]}>
+                    {tx.type === 'income' ? 'credit' : 'debit'}
+                </Text>
+            </View>
         </TouchableOpacity>
     );
 };
@@ -53,21 +59,22 @@ const styles = StyleSheet.create({
     row: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 12,
+        paddingVertical: 14,
+        paddingHorizontal: 14,
         borderRadius: Tokens.radius.md,
     },
-    avatarWrap: { paddingRight: 10 },
+    avatarWrap: { paddingRight: 12 },
     avatar: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    avatarText: { color: '#0B1220', fontWeight: '800' },
+    avatarText: { fontSize: 16, fontWeight: '800' },
     left: { flex: 1, paddingRight: 12 },
-    title: { fontSize: 16, fontWeight: '600' },
-    sub: { fontSize: 12 },
-    amount: { fontSize: 16, fontWeight: '700', fontVariant: ['tabular-nums'] },
+    title: { fontSize: 15, fontWeight: '600', marginBottom: 3 },
+    sub: { fontSize: 12, fontWeight: '500' },
+    amount: { fontSize: 17, fontWeight: '700', fontVariant: ['tabular-nums'], marginBottom: 2 },
+    amountLabel: { fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
 });
