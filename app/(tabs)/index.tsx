@@ -1,21 +1,27 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import TransactionForm from '@/components/transaction-form';
 import { TransactionItem } from '@/components/transaction-item';
 import { AppButton } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Colors, Tokens } from '@/constants/theme';
 import { useTransactions } from '@/contexts/TransactionsContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import type { Transaction } from '@/types/finance';
 import { canReadSms, parseTransactionFromMessage, readTransactionsFromDevice } from '@/utils/sms';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import React, { useMemo, useState } from 'react';
-import { Alert, FlatList, Platform, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, FlatList, Modal, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
-  const { transactions, importMany } = useTransactions();
-  const scheme = useColorScheme() ?? 'light';
+  const { transactions, importMany, update } = useTransactions();
+  // Ensure scheme is typed for theme colors
+  const scheme = (useColorScheme() ?? 'light') as 'light' | 'dark';
+  const modalBg = useThemeColor({}, 'background');
   const [manualSms, setManualSms] = useState('');
+  const [editTx, setEditTx] = useState<Transaction | null>(null);
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
 
@@ -129,7 +135,10 @@ export default function HomeScreen() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={{ paddingHorizontal: 16 }}>
-              <TransactionItem tx={item} />
+              <TransactionItem
+                tx={item}
+                onPress={() => setEditTx(item)}
+              />
             </View>
           )}
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
@@ -140,6 +149,30 @@ export default function HomeScreen() {
           }}
           scrollIndicatorInsets={{ bottom: tabBarHeight + 14 }}
         />
+        <Modal visible={!!editTx} animationType="slide" onRequestClose={() => setEditTx(null)}>
+          <ThemedView style={{ flex: 1, backgroundColor: modalBg }}>
+            <SafeAreaView style={{ flex: 1 }}>
+              {/* Modal header */}
+              <View style={{ padding: 16, borderBottomWidth: 1, borderColor: useThemeColor({}, 'border') }}>
+                <ThemedText type="title">Edit Transaction</ThemedText>
+              </View>
+              <ScrollView contentContainerStyle={{ padding: 16 }}>
+                {editTx && (
+                  <TransactionForm
+                    initialTransaction={editTx}
+                    hideTitle
+                    onSave={(t: Transaction) => {
+                      update(t);
+                      setEditTx(null);
+                      Alert.alert('Saved', 'Transaction updated');
+                    }}
+                    onCancel={() => setEditTx(null)}
+                  />
+                )}
+              </ScrollView>
+            </SafeAreaView>
+          </ThemedView>
+        </Modal>
       </SafeAreaView>
     </ThemedView>
   );

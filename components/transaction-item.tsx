@@ -4,9 +4,9 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import type { Transaction } from '@/types/finance';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-export const TransactionItem: React.FC<{ tx: Transaction }> = ({ tx }) => {
+export const TransactionItem: React.FC<{ tx: Transaction; onPress?: () => void; onLongPress?: () => void }> = ({ tx, onPress, onLongPress }) => {
     const textColor = useThemeColor({}, 'text');
     const scheme = useColorScheme() ?? 'light';
     const { categories } = useCategories();
@@ -16,7 +16,12 @@ export const TransactionItem: React.FC<{ tx: Transaction }> = ({ tx }) => {
     const title = tx.description || tx.merchant || (tx.type === 'income' ? 'Income' : 'Expense');
 
     return (
-        <View style={[styles.row, { backgroundColor: cardBg }]}>
+        <TouchableOpacity
+            onPress={onPress}
+            onLongPress={onLongPress}
+            activeOpacity={0.8}
+            style={[styles.row, { backgroundColor: cardBg }]}
+        >
             <View style={styles.avatarWrap}>
                 <View
                     style={[
@@ -40,7 +45,7 @@ export const TransactionItem: React.FC<{ tx: Transaction }> = ({ tx }) => {
             <Text style={[styles.amount, { color: amountColor }]}>
                 {tx.type === 'income' ? '+' : '-'}₹{tx.amount.toFixed(2)}
             </Text>
-        </View>
+        </TouchableOpacity>
     );
 };
 

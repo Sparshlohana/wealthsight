@@ -4,7 +4,7 @@ import { useTransactions } from '@/contexts/TransactionsContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import type { Transaction, TransactionType } from '@/types/finance';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ThemedText } from './themed-text';
 import { AppButton } from './ui/button';
@@ -12,7 +12,17 @@ import { Card } from './ui/card';
 
 const initialDateISO = () => new Date().toISOString();
 
-export default function TransactionForm() {
+export default function TransactionForm({
+    initialTransaction,
+    onSave,
+    onCancel,
+    hideTitle,
+}: {
+    initialTransaction?: Transaction | null;
+    onSave?: (t: Transaction) => void;
+    onCancel?: () => void;
+    hideTitle?: boolean;
+}) {
     const { categories } = useCategories();
     const { add } = useTransactions();
     const scheme = useColorScheme() ?? 'light';
@@ -23,6 +33,17 @@ export default function TransactionForm() {
     const [date, setDate] = useState(initialDateISO());
     const [description, setDescription] = useState('');
     const [photoUri, setPhotoUri] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (initialTransaction) {
+            setAmount(String(initialTransaction.amount));
+            setType(initialTransaction.type);
+            setCategory(initialTransaction.category ?? categories[0]?.id ?? 'misc');
+            setDate(initialTransaction.date ?? initialDateISO());
+            setDescription(initialTransaction.description ?? '');
+            setPhotoUri(initialTransaction.photoUri ?? null);
+        }
+    }, [initialTransaction, categories]);
 
     const categoryOptions = useMemo(() => categories, [categories]);
 
@@ -37,7 +58,7 @@ export default function TransactionForm() {
         const value = parseFloat(amount);
         if (!value || value <= 0) return;
         const tx: Transaction = {
-            id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            id: initialTransaction?.id ?? `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             amount: value,
             type,
             category,
@@ -46,17 +67,25 @@ export default function TransactionForm() {
             photoUri,
             source: 'manual',
         };
-        add(tx);
-        // reset
-        setAmount('');
-        setDescription('');
-        setPhotoUri(null);
-        setDate(initialDateISO());
+        if (onSave) {
+            onSave(tx);
+        } else {
+            add(tx);
+            // reset
+            setAmount('');
+            setDescription('');
+            setPhotoUri(null);
+            setDate(initialDateISO());
+        }
     }
 
     return (
         <View style={styles.container}>
-            <ThemedText type="title">Add Transaction</ThemedText>
+            {!hideTitle && (
+                <ThemedText type="title">
+                    {initialTransaction ? 'Edit Transaction' : 'Add Transaction'}
+                </ThemedText>
+            )}
             <Card style={{ gap: 16 }}>
                 <View style={styles.row}>
                     <Text style={[styles.label, { color: Colors[scheme].text }]}>Amount</Text>
@@ -177,7 +206,17 @@ export default function TransactionForm() {
                 </View>
             </Card>
 
-            <AppButton title="Add Transaction" onPress={onSubmit} />
+            <AppButton
+                title={initialTransaction ? 'Save Changes' : 'Add Transaction'}
+                onPress={onSubmit}
+            />
+            {onCancel && (
+                <AppButton
+                    title="Cancel"
+                    onPress={onCancel}
+                    variant="soft"
+                />
+            )}
         </View>
     );
 }
