@@ -78,7 +78,7 @@ export default function HomeScreen() {
       <SafeAreaView style={{ flex: 1 }}>
         {/* Header */}
         <View style={styles.header}>
-          <ThemedText type="title" style={{ fontSize: 28, letterSpacing: -0.5 }}>WealthSight</ThemedText>
+          <ThemedText type="title">WealthSight</ThemedText>
           <ThemedText style={{ color: Colors[scheme].muted, fontSize: 14 }}>
             Track your expenses effortlessly
           </ThemedText>
