@@ -1,5 +1,6 @@
 import type { Category, Transaction } from '@/types/finance';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 
 function toCSV(transactions: Transaction[]): string {
     const header = 'id,amount,type,category,description,date,merchant,source\n';
@@ -27,38 +28,50 @@ export async function exportJSON(
     categories: Category[],
     fileName = 'wealthsight-export.json'
 ) {
-    const data = JSON.stringify({ transactions, categories }, null, 2);
-    const fs: any = FileSystem as any;
-    const dir: string = fs.cacheDirectory ?? fs.documentDirectory ?? '';
-    const fileUri = `${dir}${fileName}`;
-    await FileSystem.writeAsStringAsync(fileUri, data);
     try {
-        const Sharing: any = await import('expo-sharing');
+        const data = JSON.stringify({ transactions, categories }, null, 2);
+        const dir = FileSystem.cacheDirectory ?? FileSystem.documentDirectory ?? '';
+        const fileUri = `${dir}${fileName}`;
+
+        // Write file using legacy API
+        await FileSystem.writeAsStringAsync(fileUri, data);
+
+        // Share the file
         if (await Sharing.isAvailableAsync()) {
-            await Sharing.shareAsync(fileUri, { mimeType: 'application/json' });
+            await Sharing.shareAsync(fileUri, {
+                mimeType: 'application/json'
+            });
         }
-    } catch {
-        // Sharing not available on this platform
+
+        return fileUri;
+    } catch (error) {
+        console.error('Error exporting JSON:', error);
+        throw error;
     }
-    return fileUri;
 }
 
 export async function exportCSV(
     transactions: Transaction[],
     fileName = 'wealthsight-transactions.csv'
 ) {
-    const data = toCSV(transactions);
-    const fs: any = FileSystem as any;
-    const dir: string = fs.cacheDirectory ?? fs.documentDirectory ?? '';
-    const fileUri = `${dir}${fileName}`;
-    await FileSystem.writeAsStringAsync(fileUri, data);
     try {
-        const Sharing: any = await import('expo-sharing');
+        const data = toCSV(transactions);
+        const dir = FileSystem.cacheDirectory ?? FileSystem.documentDirectory ?? '';
+        const fileUri = `${dir}${fileName}`;
+
+        // Write file using legacy API
+        await FileSystem.writeAsStringAsync(fileUri, data);
+
+        // Share the file
         if (await Sharing.isAvailableAsync()) {
-            await Sharing.shareAsync(fileUri, { mimeType: 'text/csv' });
+            await Sharing.shareAsync(fileUri, {
+                mimeType: 'text/csv'
+            });
         }
-    } catch {
-        // Sharing not available
+
+        return fileUri;
+    } catch (error) {
+        console.error('Error exporting CSV:', error);
+        throw error;
     }
-    return fileUri;
 }
