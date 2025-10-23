@@ -17,32 +17,34 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         tabBarInactiveTintColor: Colors[colorScheme ?? 'light'].tabIconDefault,
         tabBarShowLabel: true,
-        tabBarLabelStyle: { fontSize: 12, fontWeight: '600', marginBottom: 6 },
-        tabBarIconStyle: { marginTop: 6 },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '700', marginBottom: 8 },
+        tabBarIconStyle: { marginTop: 8 },
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
           position: 'absolute',
-          left: 16,
-          right: 16,
-          bottom: 16,
-          height: 64,
-          borderRadius: 32,
-          paddingBottom: 2,
+          left: 20,
+          right: 20,
+          bottom: 20,
+          height: 70,
+          borderRadius: 28,
+          paddingBottom: 8,
+          paddingTop: 4,
           borderTopWidth: 0,
-          backgroundColor: colorScheme === 'dark' ? 'rgba(21,23,24,0.9)' : 'rgba(255,255,255,0.9)',
-          // subtle shadow/elevation
+          backgroundColor: colorScheme === 'dark' ? 'rgba(21,23,24,0.96)' : 'rgba(255,255,255,0.96)',
+          borderWidth: 1,
+          borderColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.1,
-          shadowRadius: 16,
-          elevation: 12,
+          shadowOffset: { width: 0, height: 12 },
+          shadowOpacity: 0.15,
+          shadowRadius: 20,
+          elevation: 16,
         },
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -50,7 +52,7 @@ export default function TabLayout() {
         options={{
           title: 'Add',
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="plus.circle.fill" color={color} />
+            <IconSymbol size={24} name="plus.circle.fill" color={color} />
           ),
         }}
       />
@@ -59,7 +61,7 @@ export default function TabLayout() {
         options={{
           title: 'Stats',
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="chart.pie.fill" color={color} />
+            <IconSymbol size={24} name="chart.pie.fill" color={color} />
           ),
         }}
       />
@@ -68,7 +70,7 @@ export default function TabLayout() {
         options={{
           title: 'Categories',
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="folder.fill" color={color} />
+            <IconSymbol size={24} name="folder.fill" color={color} />
           ),
         }}
       />
@@ -76,7 +78,7 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="gear" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="gear" color={color} />,
         }}
       />
     </Tabs>

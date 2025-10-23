@@ -1,16 +1,27 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { TransactionItem } from '@/components/transaction-item';
+import { AppButton } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Colors, Tokens } from '@/constants/theme';
 import { useTransactions } from '@/contexts/TransactionsContext';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { canReadSms, parseTransactionFromMessage } from '@/utils/sms';
 import React, { useMemo, useState } from 'react';
-import { Alert, Button, FlatList, Platform, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, FlatList, Platform, StyleSheet, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const { transactions, importMany } = useTransactions();
+  const scheme = useColorScheme() ?? 'light';
   const [manualSms, setManualSms] = useState('');
 
   const recent = useMemo(() => transactions.sort((a, b) => +new Date(b.date) - +new Date(a.date)), [transactions]);
+  const { incomeTotal, expenseTotal, balance } = useMemo(() => {
+    const incomeTotal = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const expenseTotal = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    return { incomeTotal, expenseTotal, balance: incomeTotal - expenseTotal };
+  }, [transactions]);
 
   async function onImportSms() {
     const res = await canReadSms();
@@ -35,42 +46,88 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={{ flex: 1 }}>
-      <View style={styles.header}>
-        <ThemedText type="title">WealthSight</ThemedText>
-        <ThemedText>Recent transactions</ThemedText>
-      </View>
-      <FlatList
-        data={recent}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={{ paddingHorizontal: 16 }}>
-            <TransactionItem tx={item} />
-          </View>
-        )}
-        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-        ListHeaderComponent={
-          <View style={{ padding: 16, gap: 8 }}>
-            <Button title="Import from SMS (Android)" onPress={onImportSms} />
-            <View style={{ gap: 8 }}>
-              <ThemedText>Paste an SMS to parse</ThemedText>
-              <TextInput
-                placeholder="e.g., INR 250 debited at Swiggy..."
-                value={manualSms}
-                onChangeText={setManualSms}
-                multiline
-                numberOfLines={3}
-                style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, padding: Platform.select({ ios: 12, default: 10 }) }}
-              />
-              <Button title="Parse SMS" onPress={onParseManual} />
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.header}>
+          <ThemedText type="title">WealthSight</ThemedText>
+        </View>
+        <FlatList
+          data={recent}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={{ paddingHorizontal: 16 }}>
+              <TransactionItem tx={item} />
             </View>
-          </View>
-        }
-        contentContainerStyle={{ paddingBottom: 32, paddingTop: 4, gap: 10 }}
-      />
+          )}
+          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+          ListHeaderComponent={
+            <View style={{ padding: 16, gap: 16 }}>
+              {/* Summary */}
+              <Card>
+                <ThemedText type="subtitle">Balance</ThemedText>
+                <ThemedText style={{ fontSize: 34, fontWeight: '800', marginTop: 2 }}>
+                  ₹{balance.toFixed(0)}
+                </ThemedText>
+                <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
+                  <Badge
+                    color={Colors[scheme].success}
+                    label={`In ₹${incomeTotal.toFixed(0)}`}
+                  />
+                  <Badge
+                    color={Colors[scheme].danger}
+                    label={`Out ₹${expenseTotal.toFixed(0)}`}
+                  />
+                </View>
+              </Card>
+
+              {/* Import section */}
+              <Card style={{ gap: 12 }}>
+                <ThemedText type="subtitle">Quick import</ThemedText>
+                <AppButton title="Import from SMS (Android)" onPress={onImportSms} />
+                <View style={{ gap: 8 }}>
+                  <ThemedText>Paste an SMS to parse</ThemedText>
+                  <TextInput
+                    placeholder="e.g., INR 250 debited at Swiggy..."
+                    value={manualSms}
+                    onChangeText={setManualSms}
+                    multiline
+                    numberOfLines={3}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: Colors[scheme].border,
+                      borderRadius: Tokens.radius.sm,
+                      padding: Platform.select({ ios: 12, default: 10 }),
+                      backgroundColor: scheme === 'dark' ? '#0F1418' : '#FBFCFD',
+                    }}
+                  />
+                  <AppButton title="Parse SMS" onPress={onParseManual} variant="soft" />
+                </View>
+              </Card>
+
+              <ThemedText type="subtitle">Recent transactions</ThemedText>
+            </View>
+          }
+          contentContainerStyle={{ paddingBottom: 32, paddingTop: 4, gap: 10 }}
+        />
+      </SafeAreaView>
     </ThemedView>
   );
 }
 
+function Badge({ color, label }: { color: string; label: string }) {
+  return (
+    <View
+      style={{
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+        borderRadius: Tokens.radius.pill,
+        backgroundColor: `${color}22`,
+      }}
+    >
+      <ThemedText style={{ color, fontWeight: '700' }}>{label}</ThemedText>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  header: { padding: 16, gap: 4 },
+  header: { padding: 16, gap: 8 },
 });

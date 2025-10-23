@@ -1,11 +1,15 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Card } from '@/components/ui/card';
+import { Colors } from '@/constants/theme';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useTransactions } from '@/contexts/TransactionsContext';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BarChart, PieChart } from 'react-native-gifted-charts';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 function monthKey(d: Date) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
 
@@ -14,6 +18,7 @@ export default function StatsScreen() {
     const { categories } = useCategories();
     const [range, setRange] = useState<'month' | 'year' | 'week' | 'all'>('month');
     const textColor = useThemeColor({}, 'text');
+    const scheme = useColorScheme() ?? 'light';
 
     const { pieData, barData, totalIncome, totalExpense, changePct } = useMemo(() => {
         const now = new Date();
@@ -70,51 +75,61 @@ export default function StatsScreen() {
 
     return (
         <ThemedView style={{ flex: 1 }}>
-            <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
-                <ThemedText type="title">Insights</ThemedText>
-                <View style={styles.segment}>
-                    {(['week', 'month', 'year', 'all'] as const).map((r) => (
-                        <TouchableOpacity
-                            key={r}
-                            onPress={() => setRange(r)}
-                            style={[styles.segBtn, range === r && styles.segBtnActive]}
-                        >
-                            <Text style={[styles.segText, range === r && styles.segTextActive]}>
-                                {r.toUpperCase()}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-                <ThemedText>
-                    Income: ₹{totalIncome.toFixed(0)} • Expense: ₹{totalExpense.toFixed(0)} • MoM: {changePct.toFixed(1)}%
-                </ThemedText>
+            <SafeAreaView style={{ flex: 1 }}>
+                <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
+                    <ThemedText type="title">Insights</ThemedText>
+                    <View style={styles.segment}>
+                        {(['week', 'month', 'year', 'all'] as const).map((r) => (
+                            <TouchableOpacity
+                                key={r}
+                                onPress={() => setRange(r)}
+                                style={[
+                                    styles.segBtn,
+                                    { borderColor: Colors[scheme].border },
+                                    range === r && { backgroundColor: Colors[scheme].tint, borderColor: Colors[scheme].tint },
+                                ]}
+                            >
+                                <Text style={[styles.segText, range === r && { color: 'white' }]}>
+                                    {r.toUpperCase()}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                    <Card>
+                        <ThemedText>
+                            Income: ₹{totalIncome.toFixed(0)} • Expense: ₹{totalExpense.toFixed(0)} • MoM: {changePct.toFixed(1)}%
+                        </ThemedText>
+                    </Card>
 
-                <ThemedText type="subtitle">Category-wise expenses</ThemedText>
-                <PieChart
-                    data={safePieData}
-                    donut
-                    showText
-                    textColor={textColor}
-                    radius={110}
-                    innerRadius={70}
-                    focusOnPress
-                />
+                    <Card>
+                        <ThemedText type="subtitle">Category-wise expenses</ThemedText>
+                        <PieChart
+                            data={safePieData}
+                            donut
+                            showText
+                            textColor={textColor}
+                            radius={110}
+                            innerRadius={70}
+                            focusOnPress
+                        />
+                    </Card>
 
-                <ThemedText type="subtitle">Income vs Expense (last 6 months)</ThemedText>
-                {hasBars ? (
-                    <BarChart stackData={barData as any} barWidth={22} noOfSections={4} isAnimated />
-                ) : (
-                    <ThemedText>No monthly data available yet.</ThemedText>
-                )}
-            </ScrollView>
+                    <Card>
+                        <ThemedText type="subtitle">Income vs Expense (last 6 months)</ThemedText>
+                        {hasBars ? (
+                            <BarChart stackData={barData as any} barWidth={22} noOfSections={4} isAnimated />
+                        ) : (
+                            <ThemedText>No monthly data available yet.</ThemedText>
+                        )}
+                    </Card>
+                </ScrollView>
+            </SafeAreaView>
         </ThemedView>
     );
 }
 
 const styles = StyleSheet.create({
     segment: { flexDirection: 'row', gap: 8 },
-    segBtn: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, borderWidth: 1, borderColor: '#ccc' },
-    segBtnActive: { backgroundColor: '#0a7ea4', borderColor: '#0a7ea4' },
+    segBtn: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, borderWidth: 1 },
     segText: { fontWeight: '700' },
-    segTextActive: { color: 'white' },
 });

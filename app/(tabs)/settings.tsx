@@ -1,11 +1,14 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { AppButton } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { useTransactions } from '@/contexts/TransactionsContext';
 import { exportCSV, exportJSON } from '@/utils/export';
 import React from 'react';
-import { Button, ScrollView, Switch, View } from 'react-native';
+import { ScrollView, Switch, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
     const { theme, toggle } = useAppTheme();
@@ -17,23 +20,31 @@ export default function SettingsScreen() {
 
     return (
         <ThemedView style={{ flex: 1 }}>
-            <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
-                <ThemedText type="title">Settings</ThemedText>
+            <SafeAreaView style={{ flex: 1 }}>
+                <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
+                    <ThemedText type="title">Settings</ThemedText>
 
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <ThemedText>Dark theme</ThemedText>
-                    <Switch value={theme === 'dark'} onValueChange={toggle} />
-                </View>
+                    <Card>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <ThemedText>Dark theme</ThemedText>
+                            <Switch value={theme === 'dark'} onValueChange={toggle} />
+                        </View>
+                    </Card>
 
-                <ThemedText type="subtitle">Export</ThemedText>
-                <Button title="Export to JSON" onPress={onExportJSON} />
-                <Button title="Export transactions CSV" onPress={onExportCSV} />
+                    <Card style={{ gap: 12 }}>
+                        <ThemedText type="subtitle">Export</ThemedText>
+                        <AppButton title="Export to JSON" onPress={onExportJSON} />
+                        <AppButton title="Export transactions CSV" onPress={onExportCSV} variant="soft" />
+                    </Card>
 
-                <ThemedText type="subtitle">AI suggestion (placeholder)</ThemedText>
-                <ThemedText>
-                    You spent 20% more on food this week than last week. Consider setting a weekly budget.
-                </ThemedText>
-            </ScrollView>
+                    <Card>
+                        <ThemedText type="subtitle">AI suggestion (placeholder)</ThemedText>
+                        <ThemedText>
+                            You spent 20% more on food this week than last week. Consider setting a weekly budget.
+                        </ThemedText>
+                    </Card>
+                </ScrollView>
+            </SafeAreaView>
         </ThemedView>
     );
 }
