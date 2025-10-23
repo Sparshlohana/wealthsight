@@ -3,6 +3,7 @@ import { useCategories } from '@/contexts/CategoriesContext';
 import { useTransactions } from '@/contexts/TransactionsContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import type { Transaction, TransactionType } from '@/types/finance';
+import { getFontSize, getSpacing } from '@/utils/responsive';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import * as ImagePicker from 'expo-image-picker';
@@ -97,16 +98,16 @@ export default function TransactionForm({
     return (
         <View style={styles.container}>
             {!hideTitle && (
-                <ThemedText type="title" style={{ marginBottom: 8 }}>
+                <ThemedText type="title" style={{ marginBottom: getSpacing(6, 7, 8), fontSize: getFontSize(22, 24, 28) }}>
                     {initialTransaction ? 'Edit Transaction' : 'Add Transaction'}
                 </ThemedText>
             )}
 
             {/* Amount Input - Prominent */}
             <View style={styles.section}>
-                <Text style={[styles.label, { color: Colors[scheme].muted }]}>Amount</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Text style={{ fontSize: 32, fontWeight: '700', color: Colors[scheme].text }}>₹</Text>
+                <Text style={[styles.label, { color: Colors[scheme].muted, fontSize: getFontSize(11, 12, 13) }]}>Amount</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: getSpacing(6, 7, 8) }}>
+                    <Text style={{ fontSize: getFontSize(26, 30, 32), fontWeight: '700', color: Colors[scheme].text }}>₹</Text>
                     <TextInput
                         value={amount}
                         onChangeText={setAmount}
@@ -115,7 +116,7 @@ export default function TransactionForm({
                         keyboardType="decimal-pad"
                         style={[
                             styles.amountInput,
-                            { color: Colors[scheme].text }
+                            { color: Colors[scheme].text, fontSize: getFontSize(38, 44, 48) }
                         ]}
                     />
                 </View>
@@ -123,7 +124,7 @@ export default function TransactionForm({
 
             {/* Type Selector */}
             <View style={styles.section}>
-                <Text style={[styles.label, { color: Colors[scheme].muted }]}>Type</Text>
+                <Text style={[styles.label, { color: Colors[scheme].muted, fontSize: getFontSize(11, 12, 13) }]}>Type</Text>
                 <View style={styles.segment}>
                     {(['expense', 'income'] as TransactionType[]).map((t) => {
                         const isActive = type === t;
@@ -139,12 +140,14 @@ export default function TransactionForm({
                                     {
                                         backgroundColor: bgColor,
                                         borderColor: isActive ? bgColor : Colors[scheme].border,
+                                        paddingVertical: getSpacing(12, 13, 14),
+                                        paddingHorizontal: getSpacing(12, 14, 16),
                                     },
                                 ]}
                             >
                                 <Text style={[
                                     styles.segmentText,
-                                    { color: isActive ? '#FFFFFF' : Colors[scheme].text }
+                                    { color: isActive ? '#FFFFFF' : Colors[scheme].text, fontSize: getFontSize(14, 14, 15) }
                                 ]}>
                                     {t === 'expense' ? '💸 Expense' : '💰 Income'}
                                 </Text>
@@ -156,7 +159,7 @@ export default function TransactionForm({
 
             {/* Category */}
             <View style={styles.section}>
-                <Text style={[styles.label, { color: Colors[scheme].muted }]}>Category</Text>
+                <Text style={[styles.label, { color: Colors[scheme].muted, fontSize: getFontSize(11, 12, 13) }]}>Category</Text>
                 <View style={styles.pills}>
                     {categoryOptions.map((c) => {
                         const active = category === c.id;
@@ -172,12 +175,14 @@ export default function TransactionForm({
                                             ? (c.color ?? Colors[scheme].tint)
                                             : (scheme === 'dark' ? '#1A1D1F' : '#F6F8FA'),
                                         borderWidth: active ? 2 : 1,
+                                        paddingVertical: getSpacing(8, 9, 10),
+                                        paddingHorizontal: getSpacing(12, 14, 16),
                                     },
                                 ]}
                             >
                                 <Text style={[
                                     styles.pillText,
-                                    { color: active ? '#FFFFFF' : Colors[scheme].text, fontWeight: active ? '700' : '600' }
+                                    { color: active ? '#FFFFFF' : Colors[scheme].text, fontWeight: active ? '700' : '600', fontSize: getFontSize(13, 13, 14) }
                                 ]}>{c.name}</Text>
                             </TouchableOpacity>
                         );
@@ -187,7 +192,7 @@ export default function TransactionForm({
 
             {/* Description */}
             <View style={styles.section}>
-                <Text style={[styles.label, { color: Colors[scheme].muted }]}>Description</Text>
+                <Text style={[styles.label, { color: Colors[scheme].muted, fontSize: getFontSize(11, 12, 13) }]}>Description</Text>
                 <TextInput
                     value={description}
                     onChangeText={setDescription}
@@ -198,7 +203,9 @@ export default function TransactionForm({
                         {
                             borderColor: Colors[scheme].border,
                             backgroundColor: scheme === 'dark' ? '#1A1D1F' : '#FFFFFF',
-                            color: Colors[scheme].text
+                            color: Colors[scheme].text,
+                            fontSize: getFontSize(14, 14, 15),
+                            padding: Platform.select({ ios: getSpacing(12, 13, 14), default: getSpacing(10, 11, 12) }),
                         },
                     ]}
                 />
@@ -206,7 +213,7 @@ export default function TransactionForm({
 
             {/* Date */}
             <View style={styles.section}>
-                <Text style={[styles.label, { color: Colors[scheme].muted }]}>Date</Text>
+                <Text style={[styles.label, { color: Colors[scheme].muted, fontSize: getFontSize(11, 12, 13) }]}>Date</Text>
                 <TouchableOpacity
                     onPress={() => setShowDatePicker(true)}
                     style={[
@@ -217,13 +224,14 @@ export default function TransactionForm({
                             flexDirection: 'row',
                             alignItems: 'center',
                             justifyContent: 'space-between',
+                            padding: Platform.select({ ios: getSpacing(12, 13, 14), default: getSpacing(10, 11, 12) }),
                         },
                     ]}
                 >
-                    <Text style={{ color: Colors[scheme].text, fontSize: 15 }}>
+                    <Text style={{ color: Colors[scheme].text, fontSize: getFontSize(14, 14, 15) }}>
                         {format(dateObj, 'PPP')} • {format(dateObj, 'p')}
                     </Text>
-                    <Text style={{ fontSize: 18 }}>📅</Text>
+                    <Text style={{ fontSize: getFontSize(16, 17, 18) }}>📅</Text>
                 </TouchableOpacity>
             </View>
 
@@ -252,11 +260,11 @@ export default function TransactionForm({
                         activeOpacity={1}
                         onPress={() => setShowDatePicker(false)}
                     >
-                        <View style={{ backgroundColor: scheme === 'dark' ? '#1A1D1F' : '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16 }}>
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                                <Text style={{ fontSize: 18, fontWeight: '700', color: Colors[scheme].text }}>Select Date & Time</Text>
+                        <View style={{ backgroundColor: scheme === 'dark' ? '#1A1D1F' : '#FFFFFF', borderTopLeftRadius: getSpacing(16, 18, 20), borderTopRightRadius: getSpacing(16, 18, 20), padding: getSpacing(12, 14, 16) }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: getSpacing(12, 14, 16) }}>
+                                <Text style={{ fontSize: getFontSize(16, 17, 18), fontWeight: '700', color: Colors[scheme].text }}>Select Date & Time</Text>
                                 <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                                    <Text style={{ fontSize: 16, color: Colors[scheme].tint, fontWeight: '600' }}>Done</Text>
+                                    <Text style={{ fontSize: getFontSize(14, 15, 16), color: Colors[scheme].tint, fontWeight: '600' }}>Done</Text>
                                 </TouchableOpacity>
                             </View>
                             <DateTimePicker
@@ -273,17 +281,17 @@ export default function TransactionForm({
 
             {/* Receipt */}
             <View style={styles.section}>
-                <Text style={[styles.label, { color: Colors[scheme].muted }]}>Receipt</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Text style={[styles.label, { color: Colors[scheme].muted, fontSize: getFontSize(11, 12, 13) }]}>Receipt</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: getSpacing(10, 11, 12) }}>
                     <AppButton title={photoUri ? "Change Image" : "Pick Image"} onPress={pickImage} variant="soft" />
                     {photoUri && (
-                        <Image source={{ uri: photoUri }} style={{ width: 56, height: 56, borderRadius: 12, borderWidth: 1, borderColor: Colors[scheme].border }} />
+                        <Image source={{ uri: photoUri }} style={{ width: getSpacing(48, 52, 56), height: getSpacing(48, 52, 56), borderRadius: getSpacing(10, 11, 12), borderWidth: 1, borderColor: Colors[scheme].border }} />
                     )}
                 </View>
             </View>
 
             {/* Action Buttons */}
-            <View style={{ gap: 12, marginTop: 8 }}>
+            <View style={{ gap: getSpacing(10, 11, 12), marginTop: getSpacing(6, 7, 8) }}>
                 <AppButton
                     title={initialTransaction ? 'Save Changes' : 'Add Transaction'}
                     onPress={onSubmit}
@@ -301,11 +309,10 @@ export default function TransactionForm({
 }
 
 const styles = StyleSheet.create({
-    container: { gap: 20, padding: 16 },
-    section: { gap: 10 },
-    label: { fontSize: 13, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
+    container: { gap: getSpacing(16, 18, 20), padding: getSpacing(12, 14, 16) },
+    section: { gap: getSpacing(8, 9, 10) },
+    label: { fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
     amountInput: {
-        fontSize: 48,
         fontWeight: '700',
         flex: 1,
         padding: 0,
@@ -313,26 +320,20 @@ const styles = StyleSheet.create({
     },
     input: {
         borderWidth: 1,
-        borderRadius: 12,
-        padding: Platform.select({ ios: 14, default: 12 }),
-        fontSize: 15,
+        borderRadius: getSpacing(10, 11, 12),
     },
-    segment: { flexDirection: 'row', gap: 10, flex: 1 },
+    segment: { flexDirection: 'row', gap: getSpacing(8, 9, 10), flex: 1 },
     segmentBtn: {
         flex: 1,
-        paddingVertical: 14,
-        paddingHorizontal: 16,
         borderWidth: 1,
-        borderRadius: 12,
+        borderRadius: getSpacing(10, 11, 12),
         alignItems: 'center',
     },
-    segmentText: { fontSize: 15, fontWeight: '600' },
-    pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+    segmentText: { fontWeight: '600' },
+    pills: { flexDirection: 'row', flexWrap: 'wrap', gap: getSpacing(8, 9, 10) },
     pill: {
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 12,
+        borderRadius: getSpacing(10, 11, 12),
     },
-    pillText: { fontSize: 14, fontWeight: '600' },
-    help: { fontSize: 12, marginTop: 4 },
+    pillText: { fontWeight: '600' },
+    help: { fontSize: getFontSize(11, 11, 12), marginTop: 4 },
 });

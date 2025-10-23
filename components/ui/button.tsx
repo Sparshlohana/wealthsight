@@ -1,5 +1,6 @@
 import { Colors, Tokens } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { getFontSize, getSpacing } from '@/utils/responsive';
 import React from 'react';
 import { Pressable, Text, ViewStyle } from 'react-native';
 
@@ -18,8 +19,8 @@ export function AppButton({ title, onPress, style, variant = 'primary' }: Button
             onPress={onPress}
             style={({ pressed }) => [
                 {
-                    paddingVertical: Tokens.spacing.md,
-                    paddingHorizontal: Tokens.spacing.xl,
+                    paddingVertical: getSpacing(11, 12, Tokens.spacing.md),
+                    paddingHorizontal: getSpacing(16, 18, Tokens.spacing.xl),
                     borderRadius: Tokens.radius.pill,
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -39,6 +40,7 @@ export function AppButton({ title, onPress, style, variant = 'primary' }: Button
                 style={{
                     color: isPrimary ? 'white' : Colors[scheme].tint,
                     fontWeight: '700',
+                    fontSize: getFontSize(14, 15, 16),
                 }}
             >
                 {title}

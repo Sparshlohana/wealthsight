@@ -6,6 +6,7 @@ import { useCategories } from '@/contexts/CategoriesContext';
 import { useTransactions } from '@/contexts/TransactionsContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { getFontSize, getSpacing } from '@/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -84,14 +85,18 @@ export default function StatsScreen() {
         <ThemedView style={{ flex: 1 }}>
             <SafeAreaView style={{ flex: 1 }}>
                 <ScrollView
-                    contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: Math.max(24, insets.bottom + tabBarHeight + 24) }}
+                    contentContainerStyle={{
+                        paddingHorizontal: getSpacing(16, 18, 20),
+                        paddingTop: getSpacing(10, 11, 12),
+                        paddingBottom: Math.max(24, insets.bottom + tabBarHeight + 24)
+                    }}
                     scrollIndicatorInsets={{ bottom: tabBarHeight + 24 }}
                     showsVerticalScrollIndicator={false}
                 >
                     {/* Header */}
                     <View style={styles.header}>
-                        <ThemedText type="title" style={styles.headerTitle}>Insights</ThemedText>
-                        <ThemedText style={[styles.headerSubtitle, { color: Colors[scheme].muted }]}>
+                        <ThemedText type="title" style={[styles.headerTitle, { fontSize: getFontSize(24, 26, 28) }]}>Insights</ThemedText>
+                        <ThemedText style={[styles.headerSubtitle, { color: Colors[scheme].muted, fontSize: getFontSize(13, 14, 14) }]}>
                             Track your financial journey
                         </ThemedText>
                     </View>
