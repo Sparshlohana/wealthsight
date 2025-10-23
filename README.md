@@ -48,3 +48,53 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## Android SMS import (Development Build)
+
+Reading the SMS inbox is not supported in Expo Go. To enable the "Import from SMS" feature on Android, build a development client with a native SMS reader.
+
+Steps (Windows PowerShell):
+
+1. Install packages
+
+   ```powershell
+   npx expo install expo-dev-client
+   npm install react-native-get-sms-android
+   ```
+
+2. Ensure Android permissions are present
+
+   app.json already includes:
+
+   - android.permissions: ["READ_SMS", "RECEIVE_SMS"]
+
+3. Build a development client
+
+   Using EAS (recommended):
+
+   ```powershell
+   npx eas login
+   npx eas build:configure
+   npx eas build -p android --profile development
+   ```
+
+   After it finishes, install the .apk/.aab on your device/emulator.
+
+   Local build (optional alternative):
+
+   ```powershell
+   npx expo prebuild
+   npx expo run:android
+   ```
+
+4. Run the app with the dev client
+
+   ```powershell
+   npx expo start --dev-client
+   ```
+
+Now the Import from SMS (Android) button will scan your inbox. If nothing imports, ensure:
+
+- You granted the READ_SMS permission when prompted.
+- You’re running the development build (not Expo Go).
+- You have recent bank/UPI messages in your inbox.

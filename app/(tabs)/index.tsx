@@ -6,15 +6,16 @@ import { Card } from '@/components/ui/card';
 import { Colors, Tokens } from '@/constants/theme';
 import { useTransactions } from '@/contexts/TransactionsContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { canReadSms, parseTransactionFromMessage } from '@/utils/sms';
+import { canReadSms, parseTransactionFromMessage, readTransactionsFromDevice } from '@/utils/sms';
 import React, { useMemo, useState } from 'react';
 import { Alert, FlatList, Platform, StyleSheet, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const { transactions, importMany } = useTransactions();
   const scheme = useColorScheme() ?? 'light';
   const [manualSms, setManualSms] = useState('');
+  const insets = useSafeAreaInsets();
 
   const recent = useMemo(() => transactions.sort((a, b) => +new Date(b.date) - +new Date(a.date)), [transactions]);
   const { incomeTotal, expenseTotal, balance } = useMemo(() => {
@@ -25,12 +26,26 @@ export default function HomeScreen() {
 
   async function onImportSms() {
     const res = await canReadSms();
-    Alert.alert(
-      res.supported ? 'SMS Import' : 'SMS Import Unavailable',
-      res.supported
-        ? 'Attempting to read recent bank/UPI messages...'
-        : `${res.reason}\n\nTip: You can paste an SMS below to parse it.`
-    );
+    if (!res.supported) {
+      Alert.alert(
+        'SMS Import Unavailable',
+        `${res.reason}\n\nTip: You can paste an SMS below to parse it.`
+      );
+      return;
+    }
+
+    try {
+      Alert.alert('SMS Import', 'Scanning your inbox for recent bank/UPI messages...');
+      const txs = await readTransactionsFromDevice(200, { debug: true, sample: 5 });
+      if (txs.length > 0) {
+        importMany(txs);
+        Alert.alert('Imported', `${txs.length} transaction${txs.length > 1 ? 's' : ''} added from SMS.`);
+      } else {
+        Alert.alert('No transactions found', 'No recognizable bank/UPI messages in recent SMS.');
+      }
+    } catch (e: any) {
+      Alert.alert('Import failed', e?.message ? String(e.message) : 'Could not read SMS.');
+    }
   }
 
   // Dev aid: log parser output as you type
@@ -55,7 +70,59 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <ThemedText type="title">WealthSight</ThemedText>
         </View>
+
+        {/* Fixed summary and import section (non-scrollable) */}
+        <View style={{ padding: 16, gap: 16 }}>
+          {/* Summary */}
+          <Card>
+            <ThemedText type="subtitle">Balance</ThemedText>
+            <ThemedText style={{ fontSize: 34, fontWeight: '800', marginTop: 2 }}>
+              ₹{balance.toFixed(0)}
+            </ThemedText>
+            <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
+              <Badge
+                color={Colors[scheme].success}
+                label={`In ₹${incomeTotal.toFixed(0)}`}
+              />
+              <Badge
+                color={Colors[scheme].danger}
+                label={`Out ₹${expenseTotal.toFixed(0)}`}
+              />
+            </View>
+          </Card>
+
+          {/* Import section */}
+          <Card style={{ gap: 12 }}>
+            <ThemedText type="subtitle">Quick import</ThemedText>
+            <AppButton title="Import from SMS (Android)" onPress={onImportSms} />
+            <View style={{ gap: 8 }}>
+              <ThemedText>Paste an SMS to parse</ThemedText>
+              <TextInput
+                placeholder="e.g., INR 250 debited at Swiggy..."
+                placeholderTextColor={Colors[scheme].muted}
+                value={manualSms}
+                onChangeText={setManualSms}
+                multiline
+                numberOfLines={3}
+                style={{
+                  borderWidth: 1,
+                  borderColor: Colors[scheme].border,
+                  borderRadius: Tokens.radius.sm,
+                  padding: Platform.select({ ios: 12, default: 10 }),
+                  backgroundColor: scheme === 'dark' ? '#0F1418' : '#FBFCFD',
+                  color: Colors[scheme].text,
+                }}
+              />
+              <AppButton title="Parse SMS" onPress={onParseManual} variant="soft" />
+            </View>
+          </Card>
+
+          <ThemedText type="subtitle">Recent transactions</ThemedText>
+        </View>
+
+        {/* Only the list scrolls and fills remaining space */}
         <FlatList
+          style={{ flex: 1 }}
           data={recent}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
@@ -64,56 +131,7 @@ export default function HomeScreen() {
             </View>
           )}
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-          ListHeaderComponent={
-            <View style={{ padding: 16, gap: 16 }}>
-              {/* Summary */}
-              <Card>
-                <ThemedText type="subtitle">Balance</ThemedText>
-                <ThemedText style={{ fontSize: 34, fontWeight: '800', marginTop: 2 }}>
-                  ₹{balance.toFixed(0)}
-                </ThemedText>
-                <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
-                  <Badge
-                    color={Colors[scheme].success}
-                    label={`In ₹${incomeTotal.toFixed(0)}`}
-                  />
-                  <Badge
-                    color={Colors[scheme].danger}
-                    label={`Out ₹${expenseTotal.toFixed(0)}`}
-                  />
-                </View>
-              </Card>
-
-              {/* Import section */}
-              <Card style={{ gap: 12 }}>
-                <ThemedText type="subtitle">Quick import</ThemedText>
-                <AppButton title="Import from SMS (Android)" onPress={onImportSms} />
-                <View style={{ gap: 8 }}>
-                  <ThemedText>Paste an SMS to parse</ThemedText>
-                  <TextInput
-                    placeholder="e.g., INR 250 debited at Swiggy..."
-                    placeholderTextColor={Colors[scheme].muted}
-                    value={manualSms}
-                    onChangeText={setManualSms}
-                    multiline
-                    numberOfLines={3}
-                    style={{
-                      borderWidth: 1,
-                      borderColor: Colors[scheme].border,
-                      borderRadius: Tokens.radius.sm,
-                      padding: Platform.select({ ios: 12, default: 10 }),
-                      backgroundColor: scheme === 'dark' ? '#0F1418' : '#FBFCFD',
-                      color: Colors[scheme].text,
-                    }}
-                  />
-                  <AppButton title="Parse SMS" onPress={onParseManual} variant="soft" />
-                </View>
-              </Card>
-
-              <ThemedText type="subtitle">Recent transactions</ThemedText>
-            </View>
-          }
-          contentContainerStyle={{ paddingBottom: 32, paddingTop: 4, gap: 10 }}
+          contentContainerStyle={{ paddingBottom: Math.max(16, insets.bottom + 16), paddingTop: 4, gap: 10 }}
         />
       </SafeAreaView>
     </ThemedView>
